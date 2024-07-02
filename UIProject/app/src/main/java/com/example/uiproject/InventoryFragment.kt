@@ -17,6 +17,7 @@ import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
 class InventoryFragment : Fragment() {
@@ -40,6 +41,7 @@ class NextFragment : Fragment() {
     private lateinit var addProductButton: Button
     private lateinit var rightLinearLayout: LinearLayout
     private lateinit var inventoryRecyclerView: RecyclerView
+    private lateinit var productRecyclerView: RecyclerView
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -52,6 +54,7 @@ class NextFragment : Fragment() {
         addProductButton = view.findViewById(R.id.add_product_button)
         rightLinearLayout = view.findViewById(R.id.right)
         inventoryRecyclerView = view.findViewById(R.id.inventory_recycler_view)
+        productRecyclerView = view.findViewById(R.id.products_recycler_view)
 
         searchEditText.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
@@ -69,6 +72,32 @@ class NextFragment : Fragment() {
         addProductButton.setOnClickListener {
             showPopup()
         }
+
+        val inventories = listOf(
+            Inventory(listOf(
+                Product("Product 1", 10, 10.99),
+                Product("Product 2", 20, 20.99)
+            )),
+            Inventory(listOf(
+                Product("Product 3", 30, 30.99),
+                Product("Product 4", 40, 40.99)
+            )),
+            Inventory(listOf(
+                Product("Product 5", 50, 50.99),
+                Product("Product 6", 60, 60.99)
+            )),
+            Inventory(listOf(
+                Product("Product 7", 70, 70.99),
+                Product("Product 8", 80, 80.99)
+            ))
+        )
+
+        inventoryRecyclerView.layoutManager = LinearLayoutManager(context)
+        inventoryRecyclerView.adapter = InventoryAdapter(inventories)
+
+        productRecyclerView.layoutManager = LinearLayoutManager(context)
+        val products = listOf<Product>()
+        productRecyclerView.adapter = ProductAdapter(products)
 
         return view
     }
@@ -149,23 +178,70 @@ class NextFragment : Fragment() {
         popupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0)
     }
 
-    // Update the UI to display the products
-    private fun updateProductList(products: List<String>) {
-        val rightLayout = view?.findViewById<LinearLayout>(R.id.right)
-        rightLayout?.removeAllViews()
+    private fun displayProducts(products: List<Product>) {
+        (productRecyclerView.adapter as ProductAdapter).updateProducts(products)
+    }
 
-        for (product in products) {
-            val productView = LayoutInflater.from(context).inflate(R.layout.product_view, null)
-            val nameTextView = productView.findViewById<TextView>(R.id.product_name)
-            val quantityTextView = productView.findViewById<TextView>(R.id.product_quantity)
-            val priceTextView = productView.findViewById<TextView>(R.id.product_price)
+    private inner class InventoryAdapter(private val inventories: List<Inventory>) : RecyclerView.Adapter<InventoryAdapter.ViewHolder>() {
 
-            val parts = product.split(" - ")
-            nameTextView.text = parts[0]
-            quantityTextView.text = "Quantity: ${parts[1]}"
-            priceTextView.text = "Price: ${parts[2]}"
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.inventory_item, parent, false)
+            return ViewHolder(view)
+        }
 
-            rightLayout?.addView(productView)
+        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+            holder.bind(inventories[position])
+        }
+
+        override fun getItemCount(): Int {
+            return inventories.size
+        }
+
+        inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+            private val inventoryTextView: TextView = itemView.findViewById(R.id.inventory_name)
+
+            fun bind(inventory: Inventory) {
+                inventoryTextView.text = "Inventory ${inventory.products.size} products"
+                itemView.setOnClickListener {
+                    displayProducts(inventory.products)
+                }
+            }
+        }
+    }
+
+    private inner class ProductAdapter(private var products: List<Product>) :
+        RecyclerView.Adapter<ProductAdapter.ViewHolder>() {
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+            val view =
+                LayoutInflater.from(parent.context).inflate(R.layout.product_view, parent, false)
+            return ViewHolder(view)
+        }
+
+        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+            holder.bind(products[position])
+        }
+
+        override fun getItemCount(): Int {
+            return products.size
+        }
+
+        fun updateProducts(newProducts: List<Product>) {
+            products = newProducts
+            notifyDataSetChanged()
+        }
+
+        inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+            private val nameTextView: TextView = itemView.findViewById(R.id.product_name)
+            private val quantityTextView: TextView = itemView.findViewById(R.id.product_quantity)
+            private val priceTextView: TextView = itemView.findViewById(R.id.product_price)
+
+            fun bind(product: Product) {
+                nameTextView.text = product.name
+                quantityTextView.text = "Quantity: ${product.quantity}"
+                priceTextView.text = "Price: ${product.price}"
+
+            }
         }
     }
 

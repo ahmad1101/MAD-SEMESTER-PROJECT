@@ -1,5 +1,6 @@
 package com.example.uiproject
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -8,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
@@ -29,7 +31,7 @@ class ProductsFragment : Fragment() {
         productsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
 
         // Initialize the inventory
-        inventory = NextFragment.Inventory(
+        val inventory1 = NextFragment.Inventory(
             listOf(
                 NextFragment.Product("Product 1", 10, 10.99),
                 NextFragment.Product("Product 2", 20, 9.99),
@@ -38,12 +40,32 @@ class ProductsFragment : Fragment() {
             )
         )
 
+        val inventory2 = NextFragment.Inventory(
+            listOf(
+                NextFragment.Product("Product 4", 40, 13.99),
+                NextFragment.Product("Product 5", 50, 14.99),
+                NextFragment.Product("Product 6", 60, 15.99),
+                // Add more products here
+            )
+        )
+
+        val inventory3 = NextFragment.Inventory(
+            listOf(
+                NextFragment.Product("Product 7", 70, 16.99),
+                NextFragment.Product("Product 8", 80, 17.99),
+                NextFragment.Product("Product 9", 90, 18.99),
+                // Add more products here
+            )
+        )
+
+        val inventories = listOf(inventory1, inventory2, inventory3)
+
         // Set up the search adapter
-        val searchAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, inventory.products.map { it.name })
+        val searchAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, inventories.flatMap { it.products }.map { it.name })
         searchView.setAdapter(searchAdapter)
 
         // Set up the products recycler view adapter
-        val productsAdapter = ProductsAdapter(inventory.products)
+        val productsAdapter = InventoryAdapter(inventories, requireContext())
         productsRecyclerView.adapter = productsAdapter
 
         return view
@@ -51,28 +73,3 @@ class ProductsFragment : Fragment() {
 }
 
 // Define a custom adapter for the products recycler view
-class ProductsAdapter(private val products: List<NextFragment.Product>) : RecyclerView.Adapter<ProductsAdapter.ProductViewHolder>() {
-
-    class ProductViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val productNameTextView: TextView = itemView.findViewById(R.id.product_name)
-        val productQuantityTextView: TextView = itemView.findViewById(R.id.product_quantity)
-        val productPriceTextView: TextView = itemView.findViewById(R.id.product_price)
-    }
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ProductViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.fragment_products, parent, false)
-        return ProductViewHolder(view)
-    }
-
-    override fun onBindViewHolder(holder: ProductViewHolder, position: Int) {
-        val product = products[position]
-
-        holder.productNameTextView.text = product.name
-        holder.productQuantityTextView.text = "Quantity: ${product.quantity}"
-        holder.productPriceTextView.text = "Price: ${product.price}"
-    }
-
-    override fun getItemCount(): Int {
-        return products.size
-    }
-}
