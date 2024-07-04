@@ -1,17 +1,7 @@
 package com.example.uiproject
 
-import android.content.Intent
-import android.os.Bundle
-import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.widget.ArrayAdapter
-import android.widget.AutoCompleteTextView
-import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
+
+import android.content.Intent import android.os.Bundle import androidx.fragment.app.Fragment import android.view.LayoutInflater import android.view.View import android.view.ViewGroup import android.widget.ArrayAdapter import android.widget.AutoCompleteTextView import android.widget.TextView import androidx.appcompat.app.AppCompatActivity import androidx.recyclerview.widget.LinearLayoutManager import androidx.recyclerview.widget.RecyclerView
 
 class ProductsFragment : Fragment() {
 
@@ -19,7 +9,11 @@ class ProductsFragment : Fragment() {
     private lateinit var productsRecyclerView: RecyclerView
     private lateinit var inventory: NextFragment.Inventory
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         val view = inflater.inflate(R.layout.fragment_products, container, false)
 
         // Initialize the search view
@@ -32,6 +26,7 @@ class ProductsFragment : Fragment() {
 
         // Initialize the inventory
         val inventory1 = NextFragment.Inventory(
+            "Beef",
             listOf(
                 NextFragment.Product("Product 1", 10, 10.99),
                 NextFragment.Product("Product 2", 20, 9.99),
@@ -41,6 +36,7 @@ class ProductsFragment : Fragment() {
         )
 
         val inventory2 = NextFragment.Inventory(
+            "Chicken",
             listOf(
                 NextFragment.Product("Product 4", 40, 13.99),
                 NextFragment.Product("Product 5", 50, 14.99),
@@ -50,6 +46,7 @@ class ProductsFragment : Fragment() {
         )
 
         val inventory3 = NextFragment.Inventory(
+            "Dairy",
             listOf(
                 NextFragment.Product("Product 7", 70, 16.99),
                 NextFragment.Product("Product 8", 80, 17.99),
@@ -61,7 +58,10 @@ class ProductsFragment : Fragment() {
         val inventories = listOf(inventory1, inventory2, inventory3)
 
         // Set up the search adapter
-        val searchAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, inventories.flatMap { it.products }.map { it.name })
+        val searchAdapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_dropdown_item_1line,
+            inventories.flatMap { it.products }.map { it.name })
         searchView.setAdapter(searchAdapter)
 
         // Set up the products recycler view adapter
@@ -71,5 +71,3 @@ class ProductsFragment : Fragment() {
         return view
     }
 }
-
-// Define a custom adapter for the products recycler view

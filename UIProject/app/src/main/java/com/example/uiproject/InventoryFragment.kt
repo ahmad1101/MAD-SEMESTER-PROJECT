@@ -1,5 +1,7 @@
 package com.example.uiproject
 
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -43,6 +45,8 @@ class NextFragment : Fragment() {
     private lateinit var inventoryRecyclerView: RecyclerView
     private lateinit var productRecyclerView: RecyclerView
 
+    private var selectedInventory: Inventory? = null
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -74,19 +78,19 @@ class NextFragment : Fragment() {
         }
 
         val inventories = listOf(
-            Inventory(listOf(
+            Inventory("Beef", listOf(
                 Product("Product 1", 10, 10.99),
                 Product("Product 2", 20, 20.99)
             )),
-            Inventory(listOf(
+            Inventory("Dairy", listOf(
                 Product("Product 3", 30, 30.99),
                 Product("Product 4", 40, 40.99)
             )),
-            Inventory(listOf(
+            Inventory("Chicken", listOf(
                 Product("Product 5", 50, 50.99),
                 Product("Product 6", 60, 60.99)
             )),
-            Inventory(listOf(
+            Inventory("Cheese", listOf(
                 Product("Product 7", 70, 70.99),
                 Product("Product 8", 80, 80.99)
             ))
@@ -146,12 +150,12 @@ class NextFragment : Fragment() {
         val priceEditText = popupView.findViewById<EditText>(R.id.price_edit_text)
         val categorySpinner = popupView.findViewById<Spinner>(R.id.category_spinner)
         val saveButton = popupView.findViewById<Button>(R.id.save_button)
+        saveButton.isEnabled = true
 
         val categories = arrayOf("Category 1", "Category 2", "Category 3", "Category 4")
         val adapter =
             ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, categories)
         categorySpinner.adapter = adapter
-
 
         saveButton.setOnClickListener {
             val name = nameEditText.text.toString()
@@ -160,8 +164,10 @@ class NextFragment : Fragment() {
             val category = categorySpinner.selectedItem.toString()
 
             // Create a new product and add it to the list
-            val product = "$name - $quantity - $price - $category"
-            // Add the product to the list
+            val newProduct = Product(name, quantity, price)
+            var products = (productRecyclerView.adapter as ProductAdapter).products
+            products += newProduct
+            displayProducts(products)
 
             // Dismiss the popup
             (popupView.parent as ViewGroup).removeView(popupView)
@@ -169,13 +175,28 @@ class NextFragment : Fragment() {
 
         // Set the layout parameters of the popupView
         val layoutParams = WindowManager.LayoutParams()
-        layoutParams.width = 500
-        layoutParams.height = 400
+        layoutParams.width = 800
+        layoutParams.height = 800
         layoutParams.gravity = Gravity.CENTER
 
-        // Show the popup
-        val popupWindow = PopupWindow(popupView, 500, 400, true)
+        // Show the popup window
+        val popupWindow = PopupWindow(popupView, layoutParams.width, layoutParams.height, true)
         popupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0)
+
+        // Add the overlay to the fragment
+        val overlayView = View(context)
+        overlayView.setBackgroundColor(Color.LTGRAY)
+        overlayView.alpha = 0.2f
+        (view as ViewGroup).addView(overlayView, 0)
+        val overlayLayoutParams = overlayView.layoutParams
+        overlayLayoutParams.width = WindowManager.LayoutParams.MATCH_PARENT
+        overlayLayoutParams.height = WindowManager.LayoutParams.MATCH_PARENT
+        overlayView.layoutParams = overlayLayoutParams
+
+        popupWindow.setOnDismissListener {
+            // Remove the overlay when the popup is closed
+            (view as ViewGroup).removeView(overlayView)
+        }
     }
 
     private fun displayProducts(products: List<Product>) {
@@ -201,15 +222,16 @@ class NextFragment : Fragment() {
             private val inventoryTextView: TextView = itemView.findViewById(R.id.inventory_name)
 
             fun bind(inventory: Inventory) {
-                inventoryTextView.text = "Inventory ${inventory.products.size} products"
+                inventoryTextView.text =  inventory.name
                 itemView.setOnClickListener {
+                    selectedInventory = inventory
                     displayProducts(inventory.products)
                 }
             }
         }
     }
 
-    private inner class ProductAdapter(private var products: List<Product>) :
+    private inner class ProductAdapter(var products: List<Product>) :
         RecyclerView.Adapter<ProductAdapter.ViewHolder>() {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -246,5 +268,5 @@ class NextFragment : Fragment() {
     }
 
     data class Product(val name: String, val quantity: Int, val price: Double)
-    data class Inventory(val products: List<Product>)
+    data class Inventory(val name: String, val products: List<Product>)
 }
